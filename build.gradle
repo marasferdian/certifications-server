@@ -24,6 +24,8 @@ dependencies {
 	compile('javax.xml.bind:jaxb-api:2.3.0')
 	compile('javax.activation:activation:1.1')
 	compile('org.glassfish.jaxb:jaxb-runtime:2.3.0')
+	compile 'org.projectlombok:lombok:1.18.6'
+	annotationProcessor 'org.projectlombok:lombok:1.18.6'
 	runtimeOnly 'com.h2database:h2'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
