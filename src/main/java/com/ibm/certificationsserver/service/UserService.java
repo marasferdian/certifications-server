@@ -1,5 +1,6 @@
 package com.ibm.certificationsserver.service;
 
+import com.ibm.certificationsserver.util.CustomPasswordEncoder;
 import com.ibm.certificationsserver.exceptions.NotFoundException;
 import com.ibm.certificationsserver.model.User;
 import com.ibm.certificationsserver.persistence.UserRepository;
@@ -7,6 +8,7 @@ import org.apache.commons.collections4.IteratorUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 
 import java.util.List;
 import java.util.Optional;
@@ -47,6 +49,9 @@ public class UserService {
     }
 
     public User createUser(User user) {
+        String rawPassword = user.getPassword();
+        String encoded = new CustomPasswordEncoder().encode(rawPassword);
+        user.setPassword(encoded);
         return userRepository.save(user);
     }
 
