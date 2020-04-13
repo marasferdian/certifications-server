@@ -25,7 +25,7 @@ public class CustomUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException(username);
         }
         List<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority(user.getRole().toUpperCase()));
+        authorities.add(new SimpleGrantedAuthority(user.getRole().name().toUpperCase()));
         String encoded = new CustomPasswordEncoder().encode(user.getPassword());
         return new org.springframework.security.core.userdetails.User(username, encoded,authorities);
     }

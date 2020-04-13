@@ -1,5 +1,6 @@
 package com.ibm.certificationsserver.model;
 
+import com.ibm.certificationsserver.util.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,6 +30,6 @@ public class User{
     @Column(name = "PASSWORD")
     private String password;
 
-    @Column(name = "ROLE")
-    private String role;
+    @Enumerated(EnumType.STRING)
+    private Role role;
 }
