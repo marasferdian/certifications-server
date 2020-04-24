@@ -3,6 +3,7 @@ package com.ibm.certificationsserver.controller;
 import com.ibm.certificationsserver.exceptions.NotAllowedException;
 import com.ibm.certificationsserver.model.User;
 import com.ibm.certificationsserver.service.UserService;
+import com.ibm.certificationsserver.util.CustomPasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -54,7 +55,13 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity createUser(@RequestBody User user) {
+        user.setId(null);
+        String rawPassword = user.getPassword();
+        String encoded = new CustomPasswordEncoder().encode(rawPassword);
+        user.setPassword(encoded);
         User createdUser = userService.createUser(user);
         return new ResponseEntity<>(createdUser, HttpStatus.OK);
     }
+
+
 }
