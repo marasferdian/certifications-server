@@ -70,4 +70,31 @@ public class CertificationRepositoryImp implements CertificationRepository {
         }
         return details;
     }
+
+    @Override
+    @Transactional
+    public Certification queryCertification(long id) {
+        Session session = sessionFactory.getCurrentSession();
+        Certification certification = session.get(Certification.class, id);
+        return certification;
+    }
+
+    @Override
+    @Transactional
+    public Certification updateCertification(Certification newCertification) {
+        Session session = sessionFactory.getCurrentSession();
+        session.update(newCertification);
+        return newCertification;
+    }
+
+    @Override
+    @Transactional
+    public void deleteCertification(long id) {
+        Session session = sessionFactory.getCurrentSession();
+        Certification certification = session.get(Certification.class, id);
+        Query<Request> requestQuery = session.createQuery("DELETE FROM Request WHERE idCertificate=:id");
+        requestQuery.setParameter("id", id);
+        requestQuery.executeUpdate();
+        session.delete(certification);
+    }
 }

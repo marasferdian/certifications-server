@@ -18,6 +18,17 @@ public class UserService {
     @Autowired
     public UserService(UserRepository userRepository) {
         this.userRepository=userRepository;
+
+        /*
+        User admin = new User();
+        admin.setName("admin");
+        CustomPasswordEncoder enc = new CustomPasswordEncoder();
+        admin.setPassword(enc.encode("admin123"));
+        admin.setRole("ADMIN");
+        admin.setUsername("admin");
+        admin.setId(null);  //null because we have ID as Long object
+        userRepository.saveUser(admin);
+        */
     }
 
     public User getUser(Long id) {

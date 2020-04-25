@@ -30,7 +30,7 @@ public class UserController {
         return authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
     }
 
-    private static boolean hasAuthority(Authentication authentication, String authorityName) {
+    public  static boolean hasAuthority(Authentication authentication, String authorityName) {
         return getAuthorityList(authentication).contains(authorityName);
     }
 
@@ -64,6 +64,4 @@ public class UserController {
         User createdUser = userService.createUser(user);
         return new ResponseEntity<>(createdUser, HttpStatus.OK);
     }
-
-
 }

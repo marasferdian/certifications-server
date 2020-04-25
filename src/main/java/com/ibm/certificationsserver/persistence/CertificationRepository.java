@@ -10,4 +10,7 @@ public interface CertificationRepository {
     Certification addCertification(Certification certification);
     List<Certification> queryCertifications();
     List<RequestDetails> queryCertificationsWithFilter(CertificationFilter certificationFilter);
+    Certification queryCertification(long id);
+    Certification updateCertification(Certification newCertification);
+    void deleteCertification(long id);
 }

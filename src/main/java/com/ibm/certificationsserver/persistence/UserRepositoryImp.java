@@ -53,6 +53,7 @@ public class UserRepositoryImp implements UserRepository{
     public User saveUser(User user){
         Session session=sessionFactory.getCurrentSession();
         session.saveOrUpdate(user);
+
         return user;
     }
 }

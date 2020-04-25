@@ -2,15 +2,19 @@ package com.ibm.certificationsserver.controller;
 
 import com.ibm.certificationsserver.model.Certification;
 import com.ibm.certificationsserver.model.CertificationFilter;
-import com.ibm.certificationsserver.model.Request;
 import com.ibm.certificationsserver.model.RequestDetails;
 import com.ibm.certificationsserver.service.CertificationService;
-import org.h2.util.json.JSONObject;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFFont;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -22,7 +26,7 @@ public class CertificationsController {
 
     // ---------------------------------------CREATE OPERATIONS---------------------------------------
 
-    //ADMIN STUFF
+    //ADMIN (OK)
     @PostMapping("")
     public ResponseEntity<Certification> addCertification(@RequestBody Certification certification) {
         certification.setId(null);
@@ -30,77 +34,122 @@ public class CertificationsController {
         return new ResponseEntity<>(certification, HttpStatus.OK);
     }
 
-    //CLIENT
-    @PostMapping("/request")
-    public ResponseEntity<Request> addRequest(@RequestBody Request request){
-        certificationService.addRequest(request);
-        return new ResponseEntity<>(request,HttpStatus.OK);
-    }
     // ---------------------------------------READ OPERATIONS---------------------------------------
 
-    //CLIENT
+    //CLIENT-ADMIN (OK)
     @GetMapping("")
     public ResponseEntity<List<Certification>> queryCertifications() {
         List<Certification> certifications=certificationService.queryCertifications();
         if(certifications.isEmpty())
-            return new ResponseEntity<>(null,HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(null,HttpStatus.OK);
         return new ResponseEntity<>(certifications, HttpStatus.OK);
     }
 
-    //ADMIN
+    //CLIENT-ADMIN (OK)
+    @GetMapping("/{id}")
+    public ResponseEntity<Certification> queryCertification(@PathVariable("id") long id) {
+        Certification certification = certificationService.queryCertification(id);
+        if(certification == null)
+            return new ResponseEntity<>(null,HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(certification, HttpStatus.OK);
+    }
+
+    //ADMIN (OK)
     @PostMapping("/filters")
     public ResponseEntity<List<RequestDetails>> queryCertificationsWithFilter(@RequestBody CertificationFilter certificationFilter){
         List<RequestDetails> certifications=certificationService.queryCertificationsWithFilter(certificationFilter);
         if(certifications.isEmpty())
-            return new ResponseEntity<>(null,HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(null,HttpStatus.OK);
         return new ResponseEntity<>(certifications,HttpStatus.OK);
     }
 
-    /* TODO Excel stuff */
-
     // ---------------------------------------UPDATE OPERATIONS---------------------------------------
 
-    //CLIENT - Modify BusinessJustification and/or Quarter
-    @PutMapping("/request")
-    public ResponseEntity<Request> updateRequest(@RequestBody Request request){
-        Request req=certificationService.updateRequest(request);
-        return new ResponseEntity<>(req,HttpStatus.OK);
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity updateCertification(@PathVariable("id") int id /* TODO */) {
-        return new ResponseEntity<>(null, HttpStatus.OK);
-    }
-
+    //ADMIN (OK)
     @PutMapping("")
-    public ResponseEntity approveCertificationsList(/* TODO*/) {
-        /* TODO */
-        return new ResponseEntity<>(null, HttpStatus.OK);
-    }
-
-    //ADMIN
-    @PutMapping("/{quarter}/{name}")
-    public ResponseEntity approveRequestFilterList(@PathVariable("quarter") String quarter,
-                                                            @PathVariable("name") String participantName) {
-        List<Request> requests=certificationService.approveRequestFilterList(quarter,participantName);
-        if(requests.isEmpty())
-            return new ResponseEntity<>(null,HttpStatus.NOT_FOUND);
-        return new ResponseEntity<>(requests, HttpStatus.OK);
+    public ResponseEntity updateCertification(@RequestBody Certification newCertification) {
+        Certification certification = certificationService.updateCertification(newCertification);
+        return new ResponseEntity<>(certification, HttpStatus.OK);
     }
 
     // ---------------------------------------DELETE OPERATIONS---------------------------------------
 
-    //CLIENT
-    @DeleteMapping("/request")
-    public ResponseEntity<Request> deleteRequest(@RequestParam long userId,@RequestParam long certificationId){
-        certificationService.deleteRequest(userId,certificationId);
-        return new ResponseEntity<>(null,HttpStatus.OK);
+    //ADMIN (OK)
+    @DeleteMapping("/{id}")
+    public ResponseEntity deleteCertification(@PathVariable("id") long id) {
+        certificationService.deleteCertification(id);
+        return new ResponseEntity<>(null, HttpStatus.OK);
     }
 
-    @DeleteMapping("")
-    public ResponseEntity deleteCertification(@RequestParam int id) {
-        /* TODO */
-        System.out.println("The id: " + id);
-        return new ResponseEntity<>(null, HttpStatus.OK);
+    // --------------------------------------------EXCEL---------------------------------------------
+
+    //CLIENT-ADMIN
+    @PostMapping("/excel")
+    public ResponseEntity getExcel(@RequestBody CertificationFilter certificationFilter){
+        List<RequestDetails> certifications=certificationService.queryCertificationsWithFilter(certificationFilter);
+        createExcel(certifications);
+        return new ResponseEntity(null, HttpStatus.OK);
+    }
+
+    private void createExcel(List<RequestDetails> requestDetails) {
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Certifications");
+
+        Row header = sheet.createRow(0);
+
+        CellStyle headerStyle = workbook.createCellStyle();
+        headerStyle.setFillForegroundColor(IndexedColors.LIGHT_BLUE.getIndex());
+
+        XSSFFont font = ((XSSFWorkbook) workbook).createFont();
+        font.setFontName("Arial");
+        font.setFontHeightInPoints((short) 16);
+        font.setBold(true);
+        headerStyle.setFont(font);
+
+        fillCells(headerStyle, header, "Participant's Name", 0);
+        fillCells(headerStyle, header, "Certification's Title", 1);
+        fillCells(headerStyle, header, "Category", 2);
+        fillCells(headerStyle, header, "Cost", 3);
+        fillCells(headerStyle, header, "Business Justification", 4);
+        fillCells(headerStyle, header, "Quarter", 5);
+        fillCells(headerStyle, header, "Status", 6);
+
+        CellStyle style = workbook.createCellStyle();
+
+        for(int i = 0; i < requestDetails.size(); ++i) {
+            Row row = sheet.createRow(i + 2);
+
+            RequestDetails details = requestDetails.get(i);
+
+            fillCells(style, row, details.getParticipantName(), 0);
+            fillCells(style, row, details.getCertificationTitle(), 1);
+            fillCells(style, row, details.getCategory().toString(), 2);
+            fillCells(style, row, details.getCost() + "", 3);
+            fillCells(style, row, details.getBusinessJustification(), 4);
+            fillCells(style, row, details.getQuarter().toString(), 5);
+            fillCells(style, row, details.getStatus().toString(), 6);
+        }
+
+        for(int i = 0; i < 7; ++i) {
+            sheet.autoSizeColumn(i);
+        }
+
+        File currDir = new File(".");
+        String path = currDir.getAbsolutePath();
+        String fileLocation = path.substring(0, path.length() - 1) + "Certifications.xlsx";
+
+        FileOutputStream outputStream = null;
+        try {
+            outputStream = new FileOutputStream(fileLocation);
+            workbook.write(outputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void fillCells(CellStyle style, Row row, String s, int i) {
+        Cell cell = row.createCell(i);
+        cell.setCellValue(s);
+        cell.setCellStyle(style);
     }
 }
