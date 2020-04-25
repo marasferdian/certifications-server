@@ -15,11 +15,14 @@ import java.io.Serializable;
 @Getter
 @Setter
 public class Request implements Serializable {
+
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+
     @Column(name="id_user")
     private Long idUser;
 
-    @Id
     @Column(name="id_certificate")
     private Long idCertificate;
 

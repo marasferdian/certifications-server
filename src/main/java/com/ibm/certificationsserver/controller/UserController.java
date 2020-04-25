@@ -39,9 +39,11 @@ public class UserController {
     {
         UserService service=this.userService;
         String currentUserName=authentication.getName();
+        System.out.println(currentUserName);
         User user=service.getUser(service.getIdByUsername(currentUserName));
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
+
     @GetMapping("/users")
     public ResponseEntity getUsers(Authentication authentication) {
         if (hasAuthority(authentication, "ADMIN")) {

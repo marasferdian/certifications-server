@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @NoArgsConstructor
@@ -34,13 +35,13 @@ public class User{
     private String role;
 
     @ManyToMany(cascade = {CascadeType.DETACH,CascadeType.MERGE,
-            CascadeType.PERSIST,CascadeType.REFRESH},fetch = FetchType.LAZY)
+            CascadeType.PERSIST,CascadeType.REFRESH},fetch = FetchType.EAGER)
     @JoinTable(
             name="request",
             joinColumns = @JoinColumn(name="id_user"),
             inverseJoinColumns = @JoinColumn(name="id_certificate")
     )
-    private List<Certification> certifications;
+    private List<Certification> certifications=new ArrayList<>();
 
     public void addCertification(Certification cert){
         certifications.add(cert);
