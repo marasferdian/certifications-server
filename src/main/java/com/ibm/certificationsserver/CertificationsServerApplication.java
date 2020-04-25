@@ -2,6 +2,7 @@ package com.ibm.certificationsserver;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.datasource.init.DataSourceInitializer;
@@ -9,7 +10,7 @@ import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
 import javax.sql.DataSource;
 
-@SpringBootApplication
+@SpringBootApplication(exclude=HibernateJpaAutoConfiguration.class)
 public class CertificationsServerApplication {
 	@Bean
 	public DataSourceInitializer dataSourceInitializer(DataSource dataSource) {
