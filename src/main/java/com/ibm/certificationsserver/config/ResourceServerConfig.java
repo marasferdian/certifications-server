@@ -25,6 +25,11 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
                 .antMatchers("/login").permitAll()
                 .antMatchers("/register").permitAll()
                 .antMatchers(HttpMethod.GET, "**").permitAll()
+                .antMatchers(HttpMethod.POST, "/certifications/**").hasAuthority("ADMIN")
+                .antMatchers(HttpMethod.PUT, "/certifications").hasAuthority("ADMIN")
+                .antMatchers(HttpMethod.PUT, "/certifications/").hasAuthority("ADMIN")
+                .antMatchers(HttpMethod.DELETE, "/certifications/**").hasAuthority("ADMIN")
+                .antMatchers(HttpMethod.PUT, "/requests/{\\d+}/{\\d+}").hasAuthority("ADMIN")
                 .antMatchers(HttpMethod.OPTIONS, "**").permitAll()
                 .anyRequest().authenticated();
     }

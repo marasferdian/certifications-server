@@ -20,13 +20,13 @@ public class CustomUserDetailsService implements UserDetailsService {
     private UserRepository userRepository;
 
     public UserDetails loadUserByUsername(String username) {
-        User user = userRepository.findByUsername(username).orElse(null);
+        User user = userRepository.findByUsername(username);
         if (user == null) {
             throw new UsernameNotFoundException(username);
         }
         List<GrantedAuthority> authorities = new ArrayList<>();
         authorities.add(new SimpleGrantedAuthority(user.getRole().toUpperCase()));
-        String encoded = new CustomPasswordEncoder().encode(user.getPassword());
+        String encoded=user.getPassword();
         return new org.springframework.security.core.userdetails.User(username, encoded,authorities);
     }
 }
