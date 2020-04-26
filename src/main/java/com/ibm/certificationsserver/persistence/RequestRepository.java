@@ -6,10 +6,10 @@ import com.ibm.certificationsserver.model.RequestDetails;
 import java.util.List;
 
 public interface RequestRepository {
-    Request addRequest(Request request);
-    Request updateRequest(Request request);
+    RequestDetails addRequest(RequestDetails request);
+    RequestDetails updateRequest(RequestDetails request);
     void deleteRequest(long id);
-    List<Request> approveRequestFilterList(String quarter,String name);
+    List<RequestDetails> approveRequestFilterList(String quarter,String name);
     RequestDetails getRequestById(long id);
     List<RequestDetails> getRequestsAdmin();
     List<RequestDetails> getRequestsClient(String name);

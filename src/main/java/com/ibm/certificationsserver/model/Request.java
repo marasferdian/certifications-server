@@ -37,4 +37,12 @@ public class Request implements Serializable {
     @Column(name="business_justification")
     private String businessJustification;
 
+    public void updateRequest(Request r){
+        this.businessJustification=r.businessJustification;
+        this.idCertificate=r.idCertificate;
+        this.idUser=r.idUser;
+        this.quarter=r.quarter;
+        this.status=r.status;
+    }
+
 }
