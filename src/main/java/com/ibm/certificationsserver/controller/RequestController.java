@@ -21,8 +21,7 @@ public class RequestController {
 
     //CLIENT-ADMIN (OK)
     @PostMapping("")
-    public ResponseEntity<Request> addRequest(@RequestBody Request request){
-        request.setId(null);
+    public ResponseEntity<RequestDetails> addRequest(@RequestBody RequestDetails request){
         requestService.addRequest(request);
         return new ResponseEntity<>(request, HttpStatus.OK);
     }
@@ -50,16 +49,16 @@ public class RequestController {
     //CLIENT - Modify BusinessJustification and/or Quarter (OK)
     //ADMIN can modify all
     @PutMapping("")
-    public ResponseEntity<Request> updateRequest(@RequestBody Request request){
-        Request req=requestService.updateRequest(request);
+    public ResponseEntity<RequestDetails> updateRequest(@RequestBody RequestDetails request){
+        RequestDetails req=requestService.updateRequest(request);
         return new ResponseEntity<>(req,HttpStatus.OK);
     }
 
     //ADMIN (OK)
     @PutMapping("/{quarter}/{name}")
-    public ResponseEntity approveRequestFilterList(@PathVariable("quarter") String quarter,
+    public ResponseEntity<List<RequestDetails>> approveRequestFilterList(@PathVariable("quarter") String quarter,
                                                    @PathVariable("name") String participantName) {
-        List<Request> requests=requestService.approveRequestFilterList(quarter,participantName);
+        List<RequestDetails> requests=requestService.approveRequestFilterList(quarter,participantName);
         if(requests.isEmpty())
             return new ResponseEntity<>(null,HttpStatus.OK);
         return new ResponseEntity<>(requests, HttpStatus.OK);

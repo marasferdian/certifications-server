@@ -18,19 +18,43 @@ public class RequestRepositoryImp implements RequestRepository{
     @Autowired
     private SessionFactory sessionFactory;
 
+
+    private Request convertRequestDetailsToRequest(RequestDetails request, Session session) {
+        Request req=new Request();
+        req.setQuarter(request.getQuarter());
+        req.setStatus(request.getStatus());
+        req.setBusinessJustification(request.getBusinessJustification());
+        Query<User> q1=session.createQuery("FROM User where username=:u");
+        q1.setParameter("u",request.getParticipantName());
+        User user=q1.getSingleResult();
+        req.setIdUser(user.getId());
+        Query<Certification> q2=session.createQuery("FROM Certification where title=:t");
+        q2.setParameter("t",request.getCertificationTitle());
+        Certification certification=q2.getSingleResult();
+        req.setIdCertificate(certification.getId());
+        return req;
+    }
+
     @Override
     @Transactional
-    public Request addRequest(Request request) {
+    public RequestDetails addRequest(RequestDetails request) {
         Session session=sessionFactory.getCurrentSession();
-        session.save(request);
+        Request req = convertRequestDetailsToRequest(request, session);
+        session.save(req);
         return request;
     }
 
     @Override
     @Transactional
-    public Request updateRequest(Request request) {
+    public RequestDetails updateRequest(RequestDetails request) {
         Session session=sessionFactory.getCurrentSession();
-        session.saveOrUpdate(request);
+        Request req=convertRequestDetailsToRequest(request,session);
+        Query<Request> query=session.createQuery("FROM Request where idUser=:u AND idCertificate=:c");
+        query.setParameter("u",req.getIdUser());
+        query.setParameter("c",req.getIdCertificate());
+        Request updated=query.getSingleResult();
+        System.out.println(updated.getId());
+        session.update(updated);
         return request;
     }
 
@@ -44,24 +68,25 @@ public class RequestRepositoryImp implements RequestRepository{
 
     @Override
     @Transactional
-    public List<Request> approveRequestFilterList(String quarter, String name) {
+    public List<RequestDetails> approveRequestFilterList(String quarter, String name) {
         Session session=sessionFactory.getCurrentSession();
         Query<Request> query=session.createQuery("FROM Request WHERE quarter=:q");
         query.setParameter("q", Quarter.valueOf(quarter));
         List<Request> requests=query.list();
-        List<Request> approve=new ArrayList<>();
+        List<RequestDetails> approve=new ArrayList<>();
         for(Request r:requests){
             User u=session.get(User.class,r.getIdUser());
-            if(u.getUsername().equals(name)) {
+            Certification c=session.get(Certification.class,r.getIdCertificate());
+            if(u.getUsername().equals(name) && r.getStatus()==Status.PENDING) {
                 r.setStatus(Status.APPROVED);
-                approve.add(r);
+                populateList(approve,r,u,c);
             }
         }
         return approve;
     }
 
     private void populateList(List<RequestDetails> details,Request request, User user, Certification certification){
-        RequestDetails detail=new RequestDetails(request.getQuarter(),user.getName(),certification.getTitle(),
+        RequestDetails detail=new RequestDetails(request.getQuarter(),user.getUsername(),certification.getTitle(),
                 certification.getCategory(),request.getStatus(),certification.getCost(),request.getBusinessJustification());
         details.add(detail);
     }
@@ -116,7 +141,7 @@ public class RequestRepositoryImp implements RequestRepository{
         User user=session.get(User.class,request.getIdUser());
         Certification certification=session.get(Certification.class,request.getIdCertificate());
 
-        RequestDetails detail=new RequestDetails(request.getQuarter(),user.getName(),certification.getTitle(),
+        RequestDetails detail=new RequestDetails(request.getQuarter(),user.getUsername(),certification.getTitle(),
                 certification.getCategory(),request.getStatus(),certification.getCost(),request.getBusinessJustification());
         return detail;
     }

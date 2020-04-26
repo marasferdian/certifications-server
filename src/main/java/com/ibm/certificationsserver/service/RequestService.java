@@ -13,11 +13,11 @@ public class RequestService {
     @Autowired
     private RequestRepository requestRepository;
 
-    public Request addRequest(Request request){
+    public RequestDetails addRequest(RequestDetails request){
         return requestRepository.addRequest(request);
     }
 
-    public Request updateRequest(Request request){
+    public RequestDetails updateRequest(RequestDetails request){
         return requestRepository.updateRequest(request);
     }
 
@@ -25,7 +25,7 @@ public class RequestService {
         requestRepository.deleteRequest(id);
     }
 
-    public List<Request> approveRequestFilterList(String quarter, String name){
+    public List<RequestDetails> approveRequestFilterList(String quarter, String name){
         return requestRepository.approveRequestFilterList(quarter,name);
     }
 
