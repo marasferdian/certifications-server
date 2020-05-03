@@ -16,4 +16,8 @@ public interface UserRepository{
     List<User> getUsers();
 
     User saveUser(User user);
+
+    void deleteUser(long id);
+
+    void updateUserPassword(long id, String pass);
 }

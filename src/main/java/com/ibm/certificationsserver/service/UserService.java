@@ -50,9 +50,18 @@ public class UserService {
     public Long getIdByUsername(String username)
     {
         User user=userRepository.findByUsername(username);
-        if(user==null)
+        if(user==null) {
             throw new NotFoundException();
+        }
         return user.getId();
 
+    }
+
+    public void deleteUser(long id) {
+        userRepository.deleteUser(id);
+    }
+
+    public void updateUserPassword(long id, String pass) {
+        userRepository.updateUserPassword(id,pass);
     }
 }

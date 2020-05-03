@@ -1,6 +1,7 @@
 package com.ibm.certificationsserver.persistence;
 
 import com.ibm.certificationsserver.model.*;
+import com.ibm.certificationsserver.util.ConversionUtility;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
@@ -17,29 +18,14 @@ public class RequestRepositoryImp implements RequestRepository{
 
     @Autowired
     private SessionFactory sessionFactory;
-
-
-    private Request convertRequestDetailsToRequest(RequestDetails request, Session session) {
-        Request req=new Request();
-        req.setQuarter(request.getQuarter());
-        req.setStatus(request.getStatus());
-        req.setBusinessJustification(request.getBusinessJustification());
-        Query<User> q1=session.createQuery("FROM User where username=:u");
-        q1.setParameter("u",request.getParticipantName());
-        User user=q1.getSingleResult();
-        req.setIdUser(user.getId());
-        Query<Certification> q2=session.createQuery("FROM Certification where title=:t");
-        q2.setParameter("t",request.getCertificationTitle());
-        Certification certification=q2.getSingleResult();
-        req.setIdCertificate(certification.getId());
-        return req;
-    }
+    @Autowired
+    private ConversionUtility conversionUtility;
 
     @Override
     @Transactional
     public RequestDetails addRequest(RequestDetails request) {
         Session session=sessionFactory.getCurrentSession();
-        Request req = convertRequestDetailsToRequest(request, session);
+        Request req = conversionUtility.convertRequestDetailsToRequest(request, session);
         session.save(req);
         return request;
     }
@@ -48,7 +34,7 @@ public class RequestRepositoryImp implements RequestRepository{
     @Transactional
     public RequestDetails updateRequest(RequestDetails request) {
         Session session=sessionFactory.getCurrentSession();
-        Request req=convertRequestDetailsToRequest(request,session);
+        Request req=conversionUtility.convertRequestDetailsToRequest(request,session);
         Query<Request> query=session.createQuery("FROM Request where idUser=:u AND idCertificate=:c");
         query.setParameter("u",req.getIdUser());
         query.setParameter("c",req.getIdCertificate());
@@ -79,23 +65,17 @@ public class RequestRepositoryImp implements RequestRepository{
             Certification c=session.get(Certification.class,r.getIdCertificate());
             if(u.getUsername().equals(name) && r.getStatus()==Status.PENDING) {
                 r.setStatus(Status.APPROVED);
-                populateList(approve,r,u,c);
+                conversionUtility.populateList(approve,r,u,c);
             }
         }
         return approve;
-    }
-
-    private void populateList(List<RequestDetails> details,Request request, User user, Certification certification){
-        RequestDetails detail=new RequestDetails(request.getQuarter(),user.getUsername(),certification.getTitle(),
-                certification.getCategory(),request.getStatus(),certification.getCost(),request.getBusinessJustification());
-        details.add(detail);
     }
 
     private void createRequestDetailsList(Session session, List<Request> requestList, List<RequestDetails> requestDetails) {
         for(Request r : requestList) {
             User u=session.get(User.class,r.getIdUser());
             Certification c=session.get(Certification.class,r.getIdCertificate());
-            populateList(requestDetails,r,u,c);
+            conversionUtility.populateList(requestDetails,r,u,c);
         }
     }
 

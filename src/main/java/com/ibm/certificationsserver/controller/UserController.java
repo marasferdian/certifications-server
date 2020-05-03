@@ -9,10 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -39,7 +36,6 @@ public class UserController {
     {
         UserService service=this.userService;
         String currentUserName=authentication.getName();
-        System.out.println(currentUserName);
         User user=service.getUser(service.getIdByUsername(currentUserName));
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
@@ -63,5 +59,19 @@ public class UserController {
         user.setPassword(encoded);
         User createdUser = userService.createUser(user);
         return new ResponseEntity<>(createdUser, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/user/{id}")
+    public ResponseEntity deleteUser(@PathVariable("id") long id){
+
+        userService.deleteUser(id);
+        return new ResponseEntity<>(null,HttpStatus.OK);
+    }
+
+    @PutMapping("/user/{id}")
+    public ResponseEntity updateUserPassword(@PathVariable("id") long id,@RequestParam("password") String pass){
+
+        userService.updateUserPassword(id,pass);
+        return new ResponseEntity<>(null,HttpStatus.OK);
     }
 }

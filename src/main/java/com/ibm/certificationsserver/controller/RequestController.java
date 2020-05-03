@@ -1,5 +1,6 @@
 package com.ibm.certificationsserver.controller;
 
+import com.ibm.certificationsserver.model.Certification;
 import com.ibm.certificationsserver.model.Request;
 import com.ibm.certificationsserver.model.RequestDetails;
 import com.ibm.certificationsserver.service.RequestService;
@@ -59,8 +60,9 @@ public class RequestController {
     public ResponseEntity<List<RequestDetails>> approveRequestFilterList(@PathVariable("quarter") String quarter,
                                                    @PathVariable("name") String participantName) {
         List<RequestDetails> requests=requestService.approveRequestFilterList(quarter,participantName);
-        if(requests.isEmpty())
-            return new ResponseEntity<>(null,HttpStatus.OK);
+        if(requests.isEmpty()) {
+            return new ResponseEntity<>(null, HttpStatus.OK);
+        }
         return new ResponseEntity<>(requests, HttpStatus.OK);
     }
 

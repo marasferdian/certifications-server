@@ -4,12 +4,12 @@ import com.ibm.certificationsserver.model.*;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
-import org.hibernate.Criteria;
+import com.ibm.certificationsserver.util.ConversionUtility;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.Restrictions;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -17,13 +17,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Repository
 public class CertificationRepositoryImp implements CertificationRepository {
 
     @Autowired
     private SessionFactory sessionFactory;
+    @Autowired
+    private ConversionUtility conversionUtility;
 
     @Override
     @Transactional
@@ -42,31 +43,37 @@ public class CertificationRepositoryImp implements CertificationRepository {
         return certifications;
     }
 
-    private void addRestrictionIfNotNull(Criteria criteria, String propertyName, Object value) {
+    private void addRestrictionIfNotNull(List<Predicate> predicateList, Root root, CriteriaBuilder criteriaBuilder, CriteriaQuery<Request> criteria, String propertyName, Object value) {
         if (value != null) {
-            criteria.add(Restrictions.eq(propertyName, value));
+            predicateList.add(criteriaBuilder.equal(root.get(propertyName), value));
         }
     }
-
-    private void populateList(List<RequestDetails> details,Request request, User user, Certification certification){
-        RequestDetails detail=new RequestDetails(request.getQuarter(),user.getName(),certification.getTitle(),
-                certification.getCategory(),request.getStatus(),certification.getCost(),request.getBusinessJustification());
-        details.add(detail);
-    }
-
     @Override
     @Transactional
-    public List<RequestDetails> queryCertificationsWithFilter(CertificationFilter certificationFilter) {
-        Session session=sessionFactory.getCurrentSession();
-        Criteria criteria=session.createCriteria(Request.class);
-        addRestrictionIfNotNull(criteria,"status",certificationFilter.getStatus());
-        addRestrictionIfNotNull(criteria,"quarter",certificationFilter.getQuarter());
-        List<Request> requests=criteria.list();
-        List<RequestDetails> details=new ArrayList<>();
-        for(Request r:requests) {
-            User u=session.get(User.class,r.getIdUser());
-            Certification c=session.get(Certification.class,r.getIdCertificate());
-            populateList(details,r,u,c);
+    public List<RequestDetails> queryCertificationsWithFilter(CertificationFilter certificationFilter,Long id) {
+        final CriteriaBuilder criteriaBuilder = sessionFactory.getCriteriaBuilder();
+        Session session = sessionFactory.getCurrentSession();
+        CriteriaQuery<Request> crit = criteriaBuilder.createQuery(Request.class);
+        Root<Request> root = crit.from(Request.class);
+        crit.select(root);
+        List<Predicate> predicateList = new ArrayList<>();
+        addRestrictionIfNotNull(predicateList,root,criteriaBuilder, crit, "status", certificationFilter.getStatus());
+        addRestrictionIfNotNull(predicateList,root,criteriaBuilder, crit, "quarter", certificationFilter.getQuarter());
+        addRestrictionIfNotNull(predicateList,root,criteriaBuilder,crit,"idUser",id);
+        if(predicateList.size()!=0){
+            Predicate pred = predicateList.get(0);
+            for(int i=1 ; i < predicateList.size() ; i++){
+
+                pred = criteriaBuilder.and(predicateList.get(i),pred);
+            }
+            crit.where(pred);
+        }
+        List<Request> requests = sessionFactory.createEntityManager().createQuery(crit).getResultList();
+        List<RequestDetails> details = new ArrayList<>();
+        for (Request request : requests) {
+            User user = session.get(User.class, request.getIdUser());
+            Certification certification = session.get(Certification.class, request.getIdCertificate());
+            conversionUtility.populateList(details, request, user, certification);
         }
         return details;
     }
@@ -96,5 +103,24 @@ public class CertificationRepositoryImp implements CertificationRepository {
         requestQuery.setParameter("id", id);
         requestQuery.executeUpdate();
         session.delete(certification);
+    }
+
+    @Override
+    @Transactional
+    public Certification addPendingCertification(Certification customCertification) {
+
+        Session session = sessionFactory.getCurrentSession();
+        Query<Certification> query = session.createQuery("FROM Certification WHERE title=:customTitle AND category=:customCategory");
+        query.setParameter("customTitle",customCertification.getTitle());
+        query.setParameter("customCategory",customCertification.getCategory());
+        List<Certification> certifications = query.list();
+        if(certifications.isEmpty()){
+            PendingCertifications pendingCertifications = conversionUtility.convertCertificationToPendingCertification(customCertification);
+            pendingCertifications.setId(null);
+            session.save(pendingCertifications);
+            customCertification.setId(pendingCertifications.getId());
+            return customCertification;
+        }
+        return null;
     }
 }

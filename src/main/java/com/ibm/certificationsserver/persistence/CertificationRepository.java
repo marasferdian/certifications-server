@@ -9,8 +9,10 @@ import java.util.List;
 public interface CertificationRepository {
     Certification addCertification(Certification certification);
     List<Certification> queryCertifications();
-    List<RequestDetails> queryCertificationsWithFilter(CertificationFilter certificationFilter);
+    List<RequestDetails> queryCertificationsWithFilter(CertificationFilter certificationFilter,Long id);
     Certification queryCertification(long id);
     Certification updateCertification(Certification newCertification);
     void deleteCertification(long id);
+
+    Certification addPendingCertification(Certification customCertification);
 }

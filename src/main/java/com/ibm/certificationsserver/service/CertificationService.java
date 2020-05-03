@@ -32,8 +32,8 @@ public class CertificationService {
         return certification;
     }
 
-    public List<RequestDetails> queryCertificationsWithFilter(CertificationFilter certificationFilter){
-        return certificationRepository.queryCertificationsWithFilter(certificationFilter);
+    public List<RequestDetails> queryCertificationsWithFilter(CertificationFilter certificationFilter,Long id){
+        return certificationRepository.queryCertificationsWithFilter(certificationFilter,id);
     }
 
     public Certification updateCertification(Certification newCertification) {
@@ -43,5 +43,10 @@ public class CertificationService {
 
     public void deleteCertification(long id) {
         certificationRepository.deleteCertification(id);
+    }
+
+    public Certification addPendingCertification(Certification customCertification) {
+
+        return certificationRepository.addPendingCertification(customCertification);
     }
 }
