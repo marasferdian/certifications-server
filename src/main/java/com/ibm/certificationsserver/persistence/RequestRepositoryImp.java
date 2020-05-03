@@ -53,7 +53,7 @@ public class RequestRepositoryImp implements RequestRepository{
         query.setParameter("u",req.getIdUser());
         query.setParameter("c",req.getIdCertificate());
         Request updated=query.getSingleResult();
-        System.out.println(updated.getId());
+        updated.updateRequest(req);
         session.update(updated);
         return request;
     }
