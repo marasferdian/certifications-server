@@ -6,17 +6,27 @@ import com.ibm.certificationsserver.model.RequestDetails;
 import com.ibm.certificationsserver.service.CertificationService;
 import com.ibm.certificationsserver.service.UserService;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.util.IOUtils;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import javax.print.attribute.standard.Media;
+import javax.sql.rowset.serial.SerialBlob;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.sql.Blob;
+import java.sql.SQLException;
 import java.util.List;
 
 @RestController
@@ -105,15 +115,17 @@ public class CertificationsController {
     // --------------------------------------------EXCEL---------------------------------------------
 
     //CLIENT-ADMIN
-    @PostMapping("/excel")
-    public ResponseEntity getExcel(@RequestBody CertificationFilter certificationFilter){
+    @PostMapping(value = "/excel")
+    public  ResponseEntity<byte[]> getExcel(@RequestBody CertificationFilter certificationFilter){
         List<RequestDetails> certifications=certificationService.queryCertificationsWithFilter(certificationFilter,null);
-        createExcel(certifications);
-        return ResponseEntity.status(HttpStatus.OK).header("Filename", "requests.xls")
-                .body(null);
+        byte[] excelContent = createExcel(certifications);
+
+        return ResponseEntity.status(HttpStatus.OK).header("Filename", "requests.xlsx")
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(excelContent);
     }
 
-    private void createExcel(List<RequestDetails> requestDetails) {
+    private byte[] createExcel(List<RequestDetails> requestDetails) {
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("Certifications");
 
@@ -158,16 +170,20 @@ public class CertificationsController {
 
         File currDir = new File(".");
         String path = currDir.getAbsolutePath();
-        String fileLocation = path.substring(0, path.length() - 1) + "Certifications.xlsx";
+        String fileLocation = path.substring(0, path.length() - 1) + "src/main/resources/Certifications.xlsx";
 
         FileOutputStream outputStream = null;
         try {
             outputStream = new FileOutputStream(fileLocation);
             workbook.write(outputStream);
+            outputStream.close();
 
+            File file = new File(fileLocation);
+            return Files.readAllBytes(file.toPath());
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return null;
     }
 
     private void fillCells(CellStyle style, Row row, String s, int i) {
