@@ -109,7 +109,8 @@ public class CertificationsController {
     public ResponseEntity getExcel(@RequestBody CertificationFilter certificationFilter){
         List<RequestDetails> certifications=certificationService.queryCertificationsWithFilter(certificationFilter,null);
         createExcel(certifications);
-        return new ResponseEntity(null, HttpStatus.OK);
+        return ResponseEntity.status(HttpStatus.OK).header("Filename", "requests.xls")
+                .body(null);
     }
 
     private void createExcel(List<RequestDetails> requestDetails) {
