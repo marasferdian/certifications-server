@@ -46,10 +46,23 @@ public class RequestRepositoryImp implements RequestRepository{
 
     @Override
     @Transactional
-    public void deleteRequest(long id) {
+    public void deleteRequest(RequestDetails requestDetails) {
         Session session=sessionFactory.getCurrentSession();
-        Request r=session.get(Request.class, id);
-        session.delete(r);
+        Query<User> userq=session.createQuery("FROM User WHERE username=:usr");
+        userq.setParameter("usr",requestDetails.getParticipantName());
+        long userId=userq.getSingleResult().getId();
+
+        Query<Certification> certifq=session.createQuery("FROM Certification WHERE title=:cert AND category=:categ");
+        certifq.setParameter("cert",requestDetails.getCertificationTitle());
+        certifq.setParameter("categ",requestDetails.getCategory());
+        long certifId=certifq.getSingleResult().getId();
+
+
+        Query<Request> query=session.createQuery("FROM Request WHERE idCertificate=:cert AND idUser=:usr");
+        query.setParameter("cert",certifId);
+        query.setParameter("usr",userId);
+        Request request=query.getSingleResult();
+        session.delete(request);
     }
 
     @Override

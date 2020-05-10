@@ -27,8 +27,8 @@ public class RequestService {
         return requestRepository.updateRequest(request);
     }
 
-    public void deleteRequest(long id){
-        requestRepository.deleteRequest(id);
+    public void deleteRequest(RequestDetails requestDetails){
+        requestRepository.deleteRequest(requestDetails);
     }
 
     public List<RequestDetails> approveRequestFilterList(String quarter, String name){
