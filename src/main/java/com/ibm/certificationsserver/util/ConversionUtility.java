@@ -6,6 +6,7 @@ import org.hibernate.query.Query;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Component
 public class ConversionUtility {
@@ -32,8 +33,18 @@ public class ConversionUtility {
         pendingCertifications.setId(certification.getId());
         pendingCertifications.setTitle(certification.getTitle());
         pendingCertifications.setCategory(certification.getCategory().toString());
-        pendingCertifications.setCost(certification.getCost());
+        pendingCertifications.setCost(ThreadLocalRandom.current().nextDouble(10.5, 70.5));
         return pendingCertifications;
+    }
+
+    public Certification convertPendingCertificationToCertification(PendingCertifications pending){
+
+        Certification certification = new Certification();
+        certification.setId(pending.getId());
+        certification.setTitle(pending.getTitle());
+        certification.setCategory(pending.getCategory().toString());
+        certification.setCost(pending.getCost());
+        return certification;
     }
 
 

@@ -1,15 +1,15 @@
 package com.ibm.certificationsserver.service;
 
+import com.ibm.certificationsserver.exceptions.ExistentException;
 import com.ibm.certificationsserver.model.Certification;
 import com.ibm.certificationsserver.model.CertificationFilter;
 import com.ibm.certificationsserver.model.RequestDetails;
+import com.ibm.certificationsserver.model.Status;
 import com.ibm.certificationsserver.persistence.CertificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-
 import java.util.List;
 
 @Service
@@ -18,10 +18,13 @@ public class CertificationService {
     @Autowired
     private CertificationRepository certificationRepository;
 
-    public Certification addCertification(Certification certification){
-        return certificationRepository.addCertification(certification);
+    public Certification addCertification(Certification certification) throws ExistentException {
+        try {
+            return certificationRepository.addCertification(certification);
+        }catch (DataIntegrityViolationException e){
+            throw new ExistentException();
+        }
     }
-
     public List<Certification> queryCertifications(){
         List<Certification> certifications=certificationRepository.queryCertifications();
         return certifications;
@@ -30,6 +33,10 @@ public class CertificationService {
     public Certification queryCertification(long id) {
         Certification certification = certificationRepository.queryCertification(id);
         return certification;
+    }
+
+    public List<Certification> queryCustomCertification(){
+        return certificationRepository.queryCustomCertification();
     }
 
     public List<RequestDetails> queryCertificationsWithFilter(CertificationFilter certificationFilter,Long id){
@@ -45,8 +52,15 @@ public class CertificationService {
         certificationRepository.deleteCertification(id);
     }
 
-    public Certification addPendingCertification(Certification customCertification) {
+    public Certification addPendingCertification(Certification customCertification) throws ExistentException {
+        try {
+            return certificationRepository.addPendingCertification(customCertification);
+        }catch (DataIntegrityViolationException e){
+            throw new ExistentException();
+        }
+    }
 
-        return certificationRepository.addPendingCertification(customCertification);
+    public Certification approveOrRejectCustomCertification(Certification certif, Status status) {
+        return certificationRepository.approveOrRejectCustomCertification(certif,status);
     }
 }

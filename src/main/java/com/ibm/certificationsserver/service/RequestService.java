@@ -1,9 +1,10 @@
 package com.ibm.certificationsserver.service;
 
-import com.ibm.certificationsserver.model.Request;
+import com.ibm.certificationsserver.exceptions.ExistentException;
 import com.ibm.certificationsserver.model.RequestDetails;
 import com.ibm.certificationsserver.persistence.RequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,8 +14,13 @@ public class RequestService {
     @Autowired
     private RequestRepository requestRepository;
 
-    public RequestDetails addRequest(RequestDetails request){
-        return requestRepository.addRequest(request);
+    public RequestDetails addRequest(RequestDetails request) throws ExistentException {
+        try {
+            return requestRepository.addRequest(request);
+        }catch (DataIntegrityViolationException e){
+            throw new ExistentException();
+        }
+
     }
 
     public RequestDetails updateRequest(RequestDetails request){

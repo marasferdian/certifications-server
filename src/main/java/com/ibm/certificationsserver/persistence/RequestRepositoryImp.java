@@ -24,10 +24,10 @@ public class RequestRepositoryImp implements RequestRepository{
     @Override
     @Transactional
     public RequestDetails addRequest(RequestDetails request) {
-        Session session=sessionFactory.getCurrentSession();
-        Request req = conversionUtility.convertRequestDetailsToRequest(request, session);
-        session.save(req);
-        return request;
+            Session session = sessionFactory.getCurrentSession();
+            Request req = conversionUtility.convertRequestDetailsToRequest(request, session);
+            session.save(req);
+            return request;
     }
 
     @Override

@@ -9,7 +9,8 @@ import javax.persistence.*;
 import java.io.Serializable;
 
 @Entity
-@Table(name="request")
+@Table(name="request",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"id_user", "id_certificate"}))
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -44,5 +45,4 @@ public class Request implements Serializable {
         this.quarter=r.quarter;
         this.status=r.status;
     }
-
 }

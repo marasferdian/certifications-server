@@ -12,7 +12,8 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Getter
 @Setter
-@Table(name="certification")
+@Table(name="certification",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"title", "category"}))
 public class Certification {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

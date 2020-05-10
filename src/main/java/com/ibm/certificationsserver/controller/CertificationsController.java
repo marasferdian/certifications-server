@@ -1,33 +1,18 @@
 package com.ibm.certificationsserver.controller;
 
+import com.ibm.certificationsserver.exceptions.ExistentException;
 import com.ibm.certificationsserver.model.Certification;
 import com.ibm.certificationsserver.model.CertificationFilter;
 import com.ibm.certificationsserver.model.RequestDetails;
+import com.ibm.certificationsserver.model.Status;
 import com.ibm.certificationsserver.service.CertificationService;
 import com.ibm.certificationsserver.service.UserService;
 import com.ibm.certificationsserver.util.GenerateExcelUtils;
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.util.IOUtils;
-import org.apache.poi.xssf.usermodel.XSSFFont;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.Resource;
 import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import javax.print.attribute.standard.Media;
-import javax.sql.rowset.serial.SerialBlob;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.sql.Blob;
-import java.sql.SQLException;
 import java.util.List;
 
 @RestController
@@ -41,19 +26,45 @@ public class CertificationsController {
 
     // ---------------------------------------CREATE OPERATIONS---------------------------------------
 
-    @PostMapping("/custom")
-    public ResponseEntity<Certification> addCustomCertification(@RequestBody Certification customCertification){
-
-        Certification certification = certificationService.addPendingCertification(customCertification);
-        return new ResponseEntity<>(certification,HttpStatus.OK);
+    //CLIENT-ADMIN (OK)
+    @PostMapping("")
+    public ResponseEntity<Certification> addCertification(@RequestBody Certification certification,Authentication auth) throws ExistentException {
+        if(UserController.hasAuthority(auth,"ADMIN")) {
+            certification.setId(null);
+            certificationService.addCertification(certification);
+            return new ResponseEntity<>(certification, HttpStatus.OK);
+        }else{
+            Certification certif = certificationService.addPendingCertification(certification);
+            return new ResponseEntity<>(certif,HttpStatus.OK);
+        }
     }
 
-    //ADMIN (OK)
-    @PostMapping("")
-    public ResponseEntity<Certification> addCertification(@RequestBody Certification certification) {
-        certification.setId(null);
-        certificationService.addCertification(certification);
-        return new ResponseEntity<>(certification, HttpStatus.OK);
+    //CLIENT-ADMIN (OK)
+    @PostMapping("/excel")
+    public  ResponseEntity<byte[]> getExcel(@RequestBody CertificationFilter certificationFilter){
+        List<RequestDetails> certifications=certificationService.queryCertificationsWithFilter(certificationFilter,null);
+        byte[] excelContent = GenerateExcelUtils.createExcel(certifications);
+
+        return ResponseEntity.status(HttpStatus.OK).header("Filename", "requests.xlsx")
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(excelContent);
+    }
+
+    //CLIENT-ADMIN (OK)
+    @PostMapping("/filters")
+    public ResponseEntity<List<RequestDetails>> queryCertificationsWithFilter(@RequestBody CertificationFilter certificationFilter, Authentication auth){
+        List<RequestDetails> certifications = null;
+        if(UserController.hasAuthority(auth,"ADMIN")) {
+            certifications = certificationService.queryCertificationsWithFilter(certificationFilter,null);
+        } else {
+            String userName = auth.getName();
+            Long id = userService.getIdByUsername(userName);
+            certifications = certificationService.queryCertificationsWithFilter(certificationFilter,id);
+        }
+        if(certifications.isEmpty()){
+            return new ResponseEntity<>(null,HttpStatus.OK);
+        }
+        return new ResponseEntity<>(certifications,HttpStatus.OK);
     }
 
     // ---------------------------------------READ OPERATIONS---------------------------------------
@@ -79,19 +90,9 @@ public class CertificationsController {
     }
 
     //ADMIN (OK)
-    @PostMapping("/filters")
-    public ResponseEntity<List<RequestDetails>> queryCertificationsWithFilter(@RequestBody CertificationFilter certificationFilter, Authentication auth){
-        List<RequestDetails> certifications = null;
-        if(UserController.hasAuthority(auth,"ADMIN")) {
-            certifications = certificationService.queryCertificationsWithFilter(certificationFilter,null);
-        } else {
-            String userName = auth.getName();
-            Long id = userService.getIdByUsername(userName);
-            certifications = certificationService.queryCertificationsWithFilter(certificationFilter,id);
-        }
-        if(certifications.isEmpty()){
-            return new ResponseEntity<>(null,HttpStatus.OK);
-        }
+    @GetMapping("/custom")
+    public ResponseEntity<List<Certification>> queryCustomCertification(){
+        List<Certification> certifications=certificationService.queryCustomCertification();
         return new ResponseEntity<>(certifications,HttpStatus.OK);
     }
 
@@ -104,6 +105,13 @@ public class CertificationsController {
         return new ResponseEntity<>(certification, HttpStatus.OK);
     }
 
+    //ADMIN
+    @PutMapping("/custom/{status}")
+    public ResponseEntity<Certification> approveOrRejectCustomCertification(@RequestBody Certification certification, @PathVariable("status") Status status){
+        Certification certif=certificationService.approveOrRejectCustomCertification(certification,status);
+        return new ResponseEntity<>(certif,HttpStatus.OK);
+    }
+
     // ---------------------------------------DELETE OPERATIONS---------------------------------------
 
     //ADMIN (OK)
@@ -113,16 +121,4 @@ public class CertificationsController {
         return new ResponseEntity<>(null, HttpStatus.OK);
     }
 
-    // --------------------------------------------EXCEL---------------------------------------------
-
-    //CLIENT-ADMIN
-    @PostMapping(value = "/excel")
-    public  ResponseEntity<byte[]> getExcel(@RequestBody CertificationFilter certificationFilter){
-        List<RequestDetails> certifications=certificationService.queryCertificationsWithFilter(certificationFilter,null);
-        byte[] excelContent = GenerateExcelUtils.createExcel(certifications);
-
-        return ResponseEntity.status(HttpStatus.OK).header("Filename", "requests.xlsx")
-                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
-                .body(excelContent);
-    }
 }

@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,9 +30,9 @@ public class CertificationRepositoryImp implements CertificationRepository {
     @Override
     @Transactional
     public Certification addCertification(Certification certification) {
-        Session session=sessionFactory.getCurrentSession();
-        session.save(certification);
-        return certification;
+          Session session = sessionFactory.getCurrentSession();
+          session.save(certification);
+          return certification;
     }
 
     @Override
@@ -108,19 +109,46 @@ public class CertificationRepositoryImp implements CertificationRepository {
     @Override
     @Transactional
     public Certification addPendingCertification(Certification customCertification) {
-
         Session session = sessionFactory.getCurrentSession();
         Query<Certification> query = session.createQuery("FROM Certification WHERE title=:customTitle AND category=:customCategory");
         query.setParameter("customTitle",customCertification.getTitle());
         query.setParameter("customCategory",customCertification.getCategory());
         List<Certification> certifications = query.list();
-        if(certifications.isEmpty()){
+        if(certifications.isEmpty()) {
             PendingCertifications pendingCertifications = conversionUtility.convertCertificationToPendingCertification(customCertification);
             pendingCertifications.setId(null);
+            double cost = pendingCertifications.getCost();
+            cost = Double.parseDouble(new DecimalFormat("#.##").format(cost));
+            pendingCertifications.setCost(cost);
             session.save(pendingCertifications);
             customCertification.setId(pendingCertifications.getId());
-            return customCertification;
+            customCertification.setCost(cost);
         }
-        return null;
+        return customCertification;
+    }
+
+    @Override
+    @Transactional
+    public List<Certification> queryCustomCertification() {
+        Session session=sessionFactory.getCurrentSession();
+        List<PendingCertifications> pending=session.createQuery("FROM PendingCertifications").list();
+        List<Certification> certifications=new ArrayList<>();
+        pending.forEach((pend -> {
+            Certification certifi=conversionUtility.convertPendingCertificationToCertification(pend);
+            certifications.add(certifi);
+        }));
+        return certifications;
+    }
+
+    @Override
+    @Transactional
+    public Certification approveOrRejectCustomCertification(Certification certification, Status status) {
+        Session session=sessionFactory.getCurrentSession();
+        PendingCertifications pending=conversionUtility.convertCertificationToPendingCertification(certification);
+        session.delete(pending);
+        if(status==Status.APPROVED){
+            session.save(certification);
+        }
+        return certification;
     }
 }

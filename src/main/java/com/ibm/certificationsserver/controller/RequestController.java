@@ -1,6 +1,6 @@
 package com.ibm.certificationsserver.controller;
 
-import com.ibm.certificationsserver.model.Certification;
+import com.ibm.certificationsserver.exceptions.ExistentException;
 import com.ibm.certificationsserver.model.Request;
 import com.ibm.certificationsserver.model.RequestDetails;
 import com.ibm.certificationsserver.service.RequestService;
@@ -22,7 +22,7 @@ public class RequestController {
 
     //CLIENT-ADMIN (OK)
     @PostMapping("")
-    public ResponseEntity<RequestDetails> addRequest(@RequestBody RequestDetails request){
+    public ResponseEntity<RequestDetails> addRequest(@RequestBody RequestDetails request) throws ExistentException {
         requestService.addRequest(request);
         return new ResponseEntity<>(request, HttpStatus.OK);
     }

@@ -12,7 +12,8 @@ import javax.persistence.*;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name="pending_certification")
+@Table(name="pending_certification",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"title", "category"}))
 public class PendingCertifications {
 
     @Id

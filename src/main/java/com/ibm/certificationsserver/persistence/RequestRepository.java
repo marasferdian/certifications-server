@@ -1,6 +1,5 @@
 package com.ibm.certificationsserver.persistence;
 
-import com.ibm.certificationsserver.model.Request;
 import com.ibm.certificationsserver.model.RequestDetails;
 
 import java.util.List;
