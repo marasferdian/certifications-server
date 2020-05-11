@@ -20,8 +20,9 @@ public class ConversionUtility {
         q1.setParameter("u",request.getParticipantName());
         User user=q1.getSingleResult();
         req.setIdUser(user.getId());
-        Query<Certification> q2=session.createQuery("FROM Certification where title=:t");
+        Query<Certification> q2=session.createQuery("FROM Certification where title=:t AND category=:c");
         q2.setParameter("t",request.getCertificationTitle());
+        q2.setParameter("c",request.getCategory());
         Certification certification=q2.getSingleResult();
         req.setIdCertificate(certification.getId());
         return req;
