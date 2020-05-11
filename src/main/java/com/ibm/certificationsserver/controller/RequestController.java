@@ -3,7 +3,7 @@ package com.ibm.certificationsserver.controller;
 import com.ibm.certificationsserver.exceptions.ExistentException;
 import com.ibm.certificationsserver.model.RequestDetails;
 import com.ibm.certificationsserver.service.RequestService;
-import com.ibm.certificationsserver.util.GenerateExcelUtils;
+import com.ibm.certificationsserver.util.ExcelUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +24,7 @@ public class RequestController {
     @PostMapping("")
     public ResponseEntity<RequestDetails> addRequest(@RequestBody RequestDetails request) throws ExistentException {
         requestService.addRequest(request);
-        GenerateExcelUtils.setCached(false);
+        ExcelUtils.setCached(false);
         return new ResponseEntity<>(request, HttpStatus.OK);
     }
 
@@ -53,7 +53,7 @@ public class RequestController {
     @PutMapping("")
     public ResponseEntity<RequestDetails> updateRequest(@RequestBody RequestDetails request){
         RequestDetails req=requestService.updateRequest(request);
-        GenerateExcelUtils.setCached(false);
+        ExcelUtils.setCached(false);
         return new ResponseEntity<>(req,HttpStatus.OK);
     }
 
@@ -62,7 +62,7 @@ public class RequestController {
     public ResponseEntity<List<RequestDetails>> approveRequestFilterList(@PathVariable("quarter") String quarter,
                                                    @PathVariable("name") String participantName) {
         List<RequestDetails> requests=requestService.approveRequestFilterList(quarter,participantName);
-        GenerateExcelUtils.setCached(false);
+        ExcelUtils.setCached(false);
         if(requests.isEmpty()) {
             return new ResponseEntity<>(null, HttpStatus.OK);
         }
@@ -75,7 +75,7 @@ public class RequestController {
     @PutMapping("/delete")
     public ResponseEntity<RequestDetails> findAndDeleteRequest(@RequestBody  RequestDetails request){
         requestService.deleteRequest(request);
-        GenerateExcelUtils.setCached(false);
+        ExcelUtils.setCached(false);
         return new ResponseEntity<>(request,HttpStatus.OK);
     }
 }

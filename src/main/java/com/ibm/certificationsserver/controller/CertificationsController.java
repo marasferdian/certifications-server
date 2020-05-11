@@ -7,7 +7,7 @@ import com.ibm.certificationsserver.model.RequestDetails;
 import com.ibm.certificationsserver.model.Status;
 import com.ibm.certificationsserver.service.CertificationService;
 import com.ibm.certificationsserver.service.UserService;
-import com.ibm.certificationsserver.util.GenerateExcelUtils;
+import com.ibm.certificationsserver.util.ExcelUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
@@ -48,9 +48,7 @@ public class CertificationsController {
         List<RequestDetails> certifications = null;
         byte[] excelContent = null;
 
-        System.out.println("Is cached?: " + GenerateExcelUtils.isCached());
-
-        if(GenerateExcelUtils.isCached()) {
+        if(ExcelUtils.isCached()) {
             File currDir = new File(".");
             String path = currDir.getAbsolutePath();
             String fileLocation = path.substring(0, path.length() - 1) + "src/main/resources/Certifications.xlsx";
@@ -64,8 +62,8 @@ public class CertificationsController {
             }
         } else {
             certifications = certificationService.queryCertificationsWithFilter(certificationFilter,null);
-            excelContent = GenerateExcelUtils.createExcel(certifications);
-            GenerateExcelUtils.setCached(true);
+            excelContent = ExcelUtils.createExcel(certifications);
+            ExcelUtils.setCached(true);
         }
 
 
@@ -79,6 +77,7 @@ public class CertificationsController {
     @PostMapping("/filters")
     public ResponseEntity<List<RequestDetails>> queryCertificationsWithFilter(@RequestBody CertificationFilter certificationFilter, Authentication auth){
         List<RequestDetails> certifications = null;
+        ExcelUtils.setCached(false);
         if(UserController.hasAuthority(auth,"ADMIN")) {
             certifications = certificationService.queryCertificationsWithFilter(certificationFilter,null);
         } else {
@@ -126,6 +125,7 @@ public class CertificationsController {
     //ADMIN (OK)
     @PutMapping("")
     public ResponseEntity updateCertification(@RequestBody Certification newCertification) {
+        ExcelUtils.setCached(false);
         Certification certification = certificationService.updateCertification(newCertification);
         return new ResponseEntity<>(certification, HttpStatus.OK);
     }
@@ -143,6 +143,7 @@ public class CertificationsController {
     @DeleteMapping("/{id}")
     public ResponseEntity deleteCertification(@PathVariable("id") long id) {
         certificationService.deleteCertification(id);
+        ExcelUtils.setCached(false);
         return new ResponseEntity<>(null, HttpStatus.OK);
     }
 

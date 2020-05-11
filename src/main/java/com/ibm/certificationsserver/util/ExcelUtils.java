@@ -13,7 +13,7 @@ import java.nio.file.Files;
 import java.util.List;
 import java.util.Scanner;
 
-public class GenerateExcelUtils {
+public class ExcelUtils {
     public static byte[] createExcel(List<RequestDetails> requestDetails) {
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("Certifications");
