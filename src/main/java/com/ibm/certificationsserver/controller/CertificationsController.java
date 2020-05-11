@@ -13,6 +13,9 @@ import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
 
 @RestController
@@ -42,8 +45,30 @@ public class CertificationsController {
     //CLIENT-ADMIN (OK)
     @PostMapping("/excel")
     public  ResponseEntity<byte[]> getExcel(@RequestBody CertificationFilter certificationFilter){
-        List<RequestDetails> certifications=certificationService.queryCertificationsWithFilter(certificationFilter,null);
-        byte[] excelContent = GenerateExcelUtils.createExcel(certifications);
+        List<RequestDetails> certifications = null;
+        byte[] excelContent = null;
+
+        System.out.println("Is cached?: " + GenerateExcelUtils.isCached());
+
+        if(GenerateExcelUtils.isCached()) {
+            File currDir = new File(".");
+            String path = currDir.getAbsolutePath();
+            String fileLocation = path.substring(0, path.length() - 1) + "src/main/resources/Certifications.xlsx";
+
+            File file = new File(fileLocation);
+            try {
+                excelContent = Files.readAllBytes(file.toPath());
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            certifications = certificationService.queryCertificationsWithFilter(certificationFilter,null);
+            excelContent = GenerateExcelUtils.createExcel(certifications);
+            GenerateExcelUtils.setCached(true);
+        }
+
+
 
         return ResponseEntity.status(HttpStatus.OK).header("Filename", "requests.xlsx")
                 .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))

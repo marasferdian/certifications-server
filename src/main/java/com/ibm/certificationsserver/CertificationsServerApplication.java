@@ -1,5 +1,6 @@
 package com.ibm.certificationsserver;
 
+import com.ibm.certificationsserver.util.GenerateExcelUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
@@ -24,6 +25,7 @@ public class CertificationsServerApplication {
 	}
 
 	public static void main(String[] args) {
+		GenerateExcelUtils.setCached(false);
 		SpringApplication.run(CertificationsServerApplication.class, args);
 	}
 

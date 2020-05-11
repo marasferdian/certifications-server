@@ -32,4 +32,5 @@ out/
 .vscode/
 
 ### Resources ###
+/src/main/resources/CachedExcel.txt
 /src/main/resources/Certifications.xlsx
