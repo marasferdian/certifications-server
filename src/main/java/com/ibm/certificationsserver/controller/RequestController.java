@@ -69,8 +69,8 @@ public class RequestController {
     // ---------------------------------------DELETE OPERATIONS---------------------------------------
 
     //CLIENT-ADMIN (OK)
-    @DeleteMapping()
-    public ResponseEntity<Request> deleteRequest(@RequestBody  RequestDetails request){
+    @PutMapping("/delete")
+    public ResponseEntity<Request> findAndDeleteRequest(@RequestBody  RequestDetails request){
         requestService.deleteRequest(request);
         return new ResponseEntity<>(null,HttpStatus.OK);
     }
