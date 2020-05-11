@@ -13,9 +13,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import javax.sql.DataSource;
 import java.util.Properties;
 
-/**
- * Created by Java Developer Zone on 25-08-2017.
- */
+
 @Configuration
 @EnableTransactionManagement
 @PropertySource("classpath:application.properties")
@@ -28,7 +26,7 @@ public class HibernateConfig {
     private DataSource dataSource;    // It will automatically read database properties from application.properties and create DataSource object
 
     @Bean(name = "sessionFactory")
-    public LocalSessionFactoryBean getSessionFactory() {            // creating session factory
+    public LocalSessionFactoryBean getSessionFactory() {
         LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
         sessionFactory.setDataSource(dataSource);
         sessionFactory.setPackagesToScan(new String[]{"com.ibm.certificationsserver.persistence"});
