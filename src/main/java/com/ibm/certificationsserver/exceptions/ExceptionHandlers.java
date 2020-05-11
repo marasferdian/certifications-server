@@ -17,7 +17,7 @@ public class ExceptionHandlers {
     }
     @ExceptionHandler(ExistentException.class)
     public ResponseEntity existentException(ExistentException e){
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.ALREADY_REPORTED);
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.PRECONDITION_FAILED);
     }
 
 }
