@@ -134,7 +134,7 @@ public class CertificationsController {
     @PutMapping("/custom/{status}")
     public ResponseEntity<Certification> approveOrRejectCustomCertification(@RequestBody Certification certification, @PathVariable("status") Status status){
         Certification certif=certificationService.approveOrRejectCustomCertification(certification,status);
-        return new ResponseEntity<>(certif,HttpStatus.OK);
+        return new ResponseEntity<>(certification,HttpStatus.OK);
     }
 
     // ---------------------------------------DELETE OPERATIONS---------------------------------------
