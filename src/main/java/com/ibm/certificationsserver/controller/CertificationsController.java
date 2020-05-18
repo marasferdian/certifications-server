@@ -133,7 +133,12 @@ public class CertificationsController {
     //ADMIN
     @PutMapping("/custom/{status}")
     public ResponseEntity<Certification> approveOrRejectCustomCertification(@RequestBody Certification certification, @PathVariable("status") Status status){
-        Certification certif=certificationService.approveOrRejectCustomCertification(certification,status);
+        Certification certificationCopy = new Certification();
+        certificationCopy.setId(certification.getId());
+        certificationCopy.setCategory(certification.getCategory().toString());
+        certificationCopy.setCost(certification.getCost());
+        certificationCopy.setTitle(certification.getTitle());
+        Certification updatedCertification =certificationService.approveOrRejectCustomCertification(certificationCopy,status);
         return new ResponseEntity<>(certification,HttpStatus.OK);
     }
 
