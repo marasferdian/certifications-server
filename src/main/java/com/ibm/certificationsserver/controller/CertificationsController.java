@@ -7,6 +7,7 @@ import com.ibm.certificationsserver.model.RequestDetails;
 import com.ibm.certificationsserver.model.Status;
 import com.ibm.certificationsserver.service.CertificationService;
 import com.ibm.certificationsserver.service.UserService;
+import com.ibm.certificationsserver.util.ConversionUtility;
 import com.ibm.certificationsserver.util.ExcelUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -133,12 +134,8 @@ public class CertificationsController {
     //ADMIN
     @PutMapping("/custom/{status}")
     public ResponseEntity<Certification> approveOrRejectCustomCertification(@RequestBody Certification certification, @PathVariable("status") Status status){
-        Certification certificationCopy = new Certification();
-        certificationCopy.setId(certification.getId());
-        certificationCopy.setCategory(certification.getCategory().toString());
-        certificationCopy.setCost(certification.getCost());
-        certificationCopy.setTitle(certification.getTitle());
-        Certification updatedCertification =certificationService.approveOrRejectCustomCertification(certificationCopy,status);
+        Certification certificationCopy = ConversionUtility.updateCertification(certification);
+        certificationService.approveOrRejectCustomCertification(certificationCopy,status);
         return new ResponseEntity<>(certification,HttpStatus.OK);
     }
 

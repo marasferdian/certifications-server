@@ -11,6 +11,15 @@ import java.util.concurrent.ThreadLocalRandom;
 @Component
 public class ConversionUtility {
 
+    public static Certification updateCertification(Certification certification){
+        Certification certificationCopy = new Certification();
+        certificationCopy.setId(certification.getId());
+        certificationCopy.setCategory(certification.getCategory().toString());
+        certificationCopy.setCost(certification.getCost());
+        certificationCopy.setTitle(certification.getTitle());
+        return certificationCopy;
+    }
+
     public Request convertRequestDetailsToRequest(RequestDetails request, Session session) {
         Request req=new Request();
         req.setQuarter(request.getQuarter());
