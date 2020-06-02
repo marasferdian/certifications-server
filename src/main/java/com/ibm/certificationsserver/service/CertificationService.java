@@ -8,7 +8,6 @@ import com.ibm.certificationsserver.model.Status;
 import com.ibm.certificationsserver.persistence.CertificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -44,8 +43,7 @@ public class CertificationService {
     }
 
     public Certification updateCertification(Certification newCertification) {
-        Certification certification = certificationRepository.updateCertification(newCertification);
-        return certification;
+        return certificationRepository.updateCertification(newCertification);
     }
 
     public void deleteCertification(long id) {
